@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Live Betting Pro - Multi-API Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .api-status {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .api-badge {
+            background: #f0f0f0;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .api-badge.active {
+            background: #4ade80;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .analyze-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+        }
+        
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 25px rgba(102, 126, 234, 0.5);
+        }
+        
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2em;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #ef4444;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .match-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .match-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+        
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .league-info {
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .match-time {
+            background: #ef4444;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .team {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .team-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .xg-value {
+            font-size: 1.5em;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .xg-label {
+            font-size: 0.8em;
+            color: #999;
+        }
+        
+        .score {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+            padding: 0 20px;
+        }
+        
+        .signals {
+            margin-top: 20px;
+        }
+        
+        .signal {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .signal-market {
+            font-weight: bold;
+            font-size: 1em;
+        }
+        
+        .signal-confidence {
+            background: rgba(255,255,255,0.3);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .signal-reasoning {
+            font-size: 0.85em;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        
+        .source-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            margin-left: 10px;
+        }
+        
+        .stats-summary {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .teams {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .score {
+                font-size: 2em;
+                padding: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Live Betting Pro</h1>
+            <p>Zaawansowana analiza meczów live • Multi-API System • Powered by AI</p>
+            
+            <div class="api-status" id="apiStatus">
+                <div class="api-badge" id="apiBadge1">
+                    <span>API-Football</span>
+                </div>
+                <div class="api-badge" id="apiBadge2">
+                    <span>Football-Data</span>
+                </div>
+                <div class="api-badge" id="apiBadge3">
+                    <span>SportMonks</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button class="analyze-btn" id="analyzeBtn" onclick="analyzeMatches()">
+                    ⚡ Analizuj Mecze Live
+                </button>
+            </div>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function analyzeMatches() {
+            const resultsDiv = document.getElementById('results');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            
+            // Disable button
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = '🔄 Analizuję...';
+            
+            // Show loading
+            resultsDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Łączę się z API i analizuję mecze live...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/analyze');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    showError(data.error || 'Nieznany błąd');
+                }
+            } catch (error) {
+                showError('Błąd połączenia: ' + error.message);
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = '⚡ Analizuj Mecze Live';
+            }
+        }
+        
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            
+            // Update API status badges
+            updateAPIStatus(data.active_source);
+            
+            if (!data.results || data.results.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>⚽ Brak meczów live</h3>
+                        <p>Obecnie nie ma trwających meczów w monitorowanych ligach.</p>
+                        <p style="margin-top: 10px; font-size: 0.9em;">Najlepszy czas testowania: Sobota/Niedziela 15:00-22:00</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div style="background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: center;">
+                    <h3 style="color: #667eea; margin-bottom: 10px;">
+                        📊 Znaleziono ${data.matches_found} meczów live
+                    </h3>
+                    <p style="color: #666; font-size: 0.9em;">
+                        Aktywne źródło: <strong>${data.active_source}</strong>
+                    </p>
+                </div>
+            `;
+            
+            data.results.forEach(match => {
+                html += `
+                    <div class="match-card">
+                        <div class="match-header">
+                            <div class="league-info">
+                                ${match.league} • ${match.country || ''}
+                                <span class="source-badge">${match.source}</span>
+                            </div>
+                            <div class="match-time">${match.minute || 0}'</div>
+                        </div>
+                        
+                        <div class="teams">
+                            <div class="team">
+                                <div class="team-name">${match.home_team}</div>
+                                <div class="xg-value">${match.home_xg || '0.0'}</div>
+                                <div class="xg-label">Expected Goals</div>
+                            </div>
+                            
+                            <div class="score">
+                                ${match.home_goals || 0} : ${match.away_goals || 0}
+                            </div>
+                            
+                            <div class="team">
+                                <div class="team-name">${match.away_team}</div>
+                                <div class="xg-value">${match.away_xg || '0.0'}</div>
+                                <div class="xg-label">Expected Goals</div>
+                            </div>
+                        </div>
+                        
+                        ${match.signals && match.signals.length > 0 ? `
+                            <div class="signals">
+                                <h4 style="margin-bottom: 10px; color: #333;">💡 Sygnały Zakładowe:</h4>
+                                ${match.signals.map(signal => `
+                                    <div class="signal">
+                                        <div>
+                                            <div class="signal-market">🎯 ${signal.market}</div>
+                                            <div class="signal-reasoning">${signal.reasoning}</div>
+                                        </div>
+                                        <div class="signal-confidence">${signal.confidence}%</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        <div class="stats-summary">
+                            <div class="stat-item">
+                                <div class="stat-value">${match.total_xg ? match.total_xg.toFixed(1) : 'N/A'}</div>
+                                <div class="stat-label">Total xG</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${match.home_goals + match.away_goals}</div>
+                                <div class="stat-label">Bramki</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${match.minute || 0}'</div>
+                                <div class="stat-label">Minuta</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function updateAPIStatus(activeSource) {
+            // Reset all badges
+            document.querySelectorAll('.api-badge').forEach(badge => {
+                badge.classList.remove('active');
+            });
+            
+            // Highlight active source
+            if (activeSource === 'API-Football') {
+                document.getElementById('apiBadge1').classList.add('active');
+            } else if (activeSource === 'Football-Data.org') {
+                document.getElementById('apiBadge2').classList.add('active');
+            } else if (activeSource === 'SportMonks') {
+                document.getElementById('apiBadge3').classList.add('active');
+            }
+        }
+        
+        function showError(message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="error">
+                    <h3>❌ Błąd połączenia</h3>
+                    <p>${message}</p>
+                    <p style="margin-top: 15px; font-size: 0.9em;">
+                        Możliwe przyczyny:<br>
+                        • Brak meczów live w tym momencie<br>
+                        • Problem z API<br>
+                        • Przekroczony limit requestów
+                    </p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
